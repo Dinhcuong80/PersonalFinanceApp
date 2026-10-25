@@ -6,129 +6,277 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FinSmart Pro" />
-  <link rel="manifest" href="./manifest.json" />
-  <title>FinSmart Pro - Full Money Lover Edition</title>
-  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <title>FinSmart Pro - Quản lý Tài chính & Sổ Nợ</title>
   <style>
     :root {
-      --background: #F2F2F7;
+      --bg: #F2F2F7;
       --card: #FFFFFF;
-      --sidebar: #FFFFFF;
       --secondary: #E5E5EA;
-      --foreground: #000000;
-      --muted-foreground: #6C6C70;
-      --border: rgba(60, 60, 67, 0.14);
+      --text: #1C1C1E;
+      --muted: #6C6C70;
+      --border: #D1D1D6;
+      --green: #10B981;
+      --red: #EF4444;
+      --blue: #007AFF;
+      --amber: #F59E0B;
+      --purple: #8B5CF6;
+      --teal: #14B8A6;
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --background: #000000;
-        --card: #1C1C1E;
-        --sidebar: #1C1C1E;
-        --secondary: #2C2C2E;
-        --foreground: #FFFFFF;
-        --muted-foreground: #98989D;
-        --border: rgba(84, 84, 88, 0.45);
-      }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 12px;
+      padding-bottom: 90px;
     }
+    .app-shell {
+      max-width: 440px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    .top-bar {
+      padding: 14px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .row-start { display: flex; align-items: center; gap: 10px; }
+    .wallet-select {
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+    .btn {
+      border: none;
+      border-radius: 99px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-amber { background: #FEF3C7; color: #D97706; border: 1px solid #FCD34D; }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .toolbar-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .tool-btn {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 8px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      color: var(--text);
+    }
+    .toast {
+      margin: 10px 14px 0;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toast.show { display: flex; }
+    .content { padding: 14px; min-height: 480px; }
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 13px;
+      margin-bottom: 10px;
+    }
+    .vip-banner {
+      background: linear-gradient(135deg, #F59E0B, #EA580C);
+      color: #000;
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .tx-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 8px;
+    }
+    .icon-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--secondary);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .progress-fill { height: 100%; background: var(--green); border-radius: 99px; }
+    .modal-box {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      padding: 14px;
+      display: none;
+    }
+    .modal-box.show { display: block; }
+    .input, .select {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .tab-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border-top: 1px solid var(--border);
+      background: var(--card);
+      padding: 8px 4px;
+    }
+    .tab-item {
+      border: none;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      cursor: pointer;
+      gap: 2px;
+    }
+    .tab-item.active { color: var(--green); font-weight: 700; }
+    .text-sm { font-size: 14px; }
+    .text-xs { font-size: 12px; }
+    .muted { color: var(--muted); }
+    .bold { font-weight: 700; }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .amber { color: var(--amber); }
+    .teal { color: var(--teal); }
   </style>
 </head>
-<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-2 md:p-6">
+<body>
 
-  <div class="max-w-md mx-auto bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-xl overflow-hidden flex flex-col">
-
-    <!-- Money Lover Top Header -->
-    <div class="px-4 pt-4 pb-3 border-b border-[var(--border)] bg-[var(--sidebar)] space-y-2">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-lg">👛</span>
+  <div class="app-shell">
+    <!-- Top Header -->
+    <div class="top-bar">
+      <div class="row-between">
+        <div class="row-start">
+          <span style="font-size:20px;">👛</span>
           <div>
-            <div class="text-xs text-[var(--muted-foreground)]">Ví đang chọn</div>
-            <select id="globalWalletSelect" onchange="selectedWalletId=this.value;render()" class="bg-transparent text-sm font-bold text-[var(--foreground)] outline-none cursor-pointer">
-            </select>
+            <div class="text-xs muted">Ví đang chọn</div>
+            <select id="globalWalletSelect" class="wallet-select" onchange="selectedWalletId=this.value;render()"></select>
           </div>
         </div>
-        <button onclick="openTxModal()" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">
-          + Ghi chép
-        </button>
+        <div class="row-start">
+          <button class="btn btn-amber" id="headerCrownBtn" onclick="openPaywallModal()">👑 PRO</button>
+          <button class="btn btn-green" onclick="openTxModal()">+ Ghi chép</button>
+        </div>
       </div>
 
-      <!-- Quick Pro Toolbar -->
-      <div class="grid grid-cols-3 gap-1.5 pt-1">
-        <button onclick="openOCRModal()" class="py-1.5 px-2 rounded-xl bg-blue-500/10 text-blue-500 text-xs font-semibold flex items-center justify-center gap-1">
-          <span>📸</span><span>Quét HĐ AI</span>
-        </button>
-        <button onclick="openSplitBillModal()" class="py-1.5 px-2 rounded-xl bg-purple-500/10 text-purple-500 text-xs font-semibold flex items-center justify-center gap-1">
-          <span>🍕</span><span>Chia tiền nhóm</span>
-        </button>
-        <button onclick="openAdjustBalanceModal()" class="py-1.5 px-2 rounded-xl bg-amber-500/10 text-amber-500 text-xs font-semibold flex items-center justify-center gap-1">
-          <span>⚖️</span><span>Chỉnh số dư</span>
-        </button>
+      <!-- Quick Money Lover Pro Toolbar -->
+      <div class="toolbar-3">
+        <button class="tool-btn" onclick="openOCRModal()">📸 Quét HĐ AI</button>
+        <button class="tool-btn" onclick="openSplitBillModal()">🍕 Chia tiền nhóm</button>
+        <button class="tool-btn" onclick="openAdjustBalanceModal()">⚖️ Chỉnh số dư</button>
       </div>
     </div>
 
-    <div id="toastBox" class="hidden mx-4 mt-2.5 px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-medium flex items-center justify-between">
+    <!-- Notification Toast -->
+    <div id="toastBox" class="toast">
       <span id="toastText">Thông báo</span>
-      <button onclick="hideToast()" class="ml-2 font-bold">✕</button>
+      <span style="cursor:pointer;" onclick="hideToast()">✕</span>
     </div>
 
-    <div id="viewContainer" class="p-4 space-y-3.5 min-h-[540px]"></div>
+    <!-- Main View Content -->
+    <div id="viewContainer" class="content"></div>
 
-    <div id="modalContainer" class="hidden border-t border-[var(--border)] bg-[var(--sidebar)] p-4"></div>
+    <!-- Modal Drawer -->
+    <div id="modalContainer" class="modal-box"></div>
 
-    <div class="border-t border-[var(--border)] bg-[var(--sidebar)] px-1.5 py-2 grid grid-cols-5 gap-1">
-      <button onclick="switchTab('dashboard')" id="tab_dashboard" class="flex flex-col items-center py-1 rounded-xl text-emerald-500 font-semibold">
-        <span class="text-base">📒</span>
-        <span class="text-xs mt-0.5">Sổ thu chi</span>
+    <!-- Bottom Tab Bar -->
+    <div class="tab-bar">
+      <button id="tab_dashboard" class="tab-item active" onclick="switchTab('dashboard')">
+        <span style="font-size:18px;">📒</span><span>Sổ thu chi</span>
       </button>
-      <button onclick="switchTab('budget')" id="tab_budget" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
-        <span class="text-base">🎯</span>
-        <span class="text-xs mt-0.5">Ngân sách</span>
+      <button id="tab_budget" class="tab-item" onclick="switchTab('budget')">
+        <span style="font-size:18px;">🎯</span><span>Ngân sách</span>
       </button>
-      <button onclick="switchTab('debt')" id="tab_debt" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
-        <span class="text-base">🤝</span>
-        <span class="text-xs mt-0.5">Sổ nợ</span>
+      <button id="tab_debt" class="tab-item" onclick="switchTab('debt')">
+        <span style="font-size:18px;">🤝</span><span>Sổ nợ</span>
       </button>
-      <button onclick="switchTab('events')" id="tab_events" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
-        <span class="text-base">✈️</span>
-        <span class="text-xs mt-0.5">Sự kiện & HĐ</span>
+      <button id="tab_events" class="tab-item" onclick="switchTab('events')">
+        <span style="font-size:18px;">✈️</span><span>Sự kiện</span>
       </button>
-      <button onclick="switchTab('analytics')" id="tab_analytics" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
-        <span class="text-base">📊</span>
-        <span class="text-xs mt-0.5">Báo cáo & Ví</span>
+      <button id="tab_analytics" class="tab-item" onclick="switchTab('analytics')">
+        <span style="font-size:18px;">👑</span><span>Ví & VIP</span>
       </button>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'FINSMART_MONEYLOVER_PRO_V2';
+    const STORAGE_KEY = 'FINSMART_STANDALONE_V3';
     const initialSeed = {
+      isPro: false,
+      selectedPlan: 'LIFETIME',
       accounts: [
         { id: 'acc1', name: 'Tiền mặt', type: 'Tiền mặt', balance: 2500000, icon: '💵', excludeFromTotal: false },
-        { id: 'acc2', name: 'Techcombank', type: 'Ngân hàng', balance: 15000000, icon: '🏦', excludeFromTotal: false },
-        { id: 'acc3', name: 'Sổ Tiết kiệm Dài hạn', type: 'Tiết kiệm', balance: 50000000, icon: '🔒', excludeFromTotal: true }
+        { id: 'acc2', name: 'Techcombank', type: 'Ngân hàng', balance: 15000000, icon: '🏦', excludeFromTotal: false }
       ],
       categories: [
-        { id: 'cat1', name: 'Ăn uống', icon: '🍜', group: 'NEEDS', isIncome: false },
-        { id: 'cat2', name: 'Di chuyển', icon: '🚗', group: 'NEEDS', isIncome: false },
-        { id: 'cat3', name: 'Hóa đơn & Tiện ích', icon: '⚡', group: 'NEEDS', isIncome: false },
-        { id: 'cat4', name: 'Mua sắm & Giải trí', icon: '🛍️', group: 'WANTS', isIncome: false },
-        { id: 'cat5', name: 'Du lịch & Nghỉ dưỡng', icon: '🏖️', group: 'WANTS', isIncome: false },
-        { id: 'cat6', name: 'Tiền lương', icon: '💼', group: 'INCOME', isIncome: true },
-        { id: 'cat7', name: 'Thưởng & Đầu tư', icon: '📈', group: 'INCOME', isIncome: true }
+        { id: 'cat1', name: 'Ăn uống', icon: '🍜', isIncome: false },
+        { id: 'cat2', name: 'Di chuyển', icon: '🚗', isIncome: false },
+        { id: 'cat3', name: 'Hóa đơn & Điện nước', icon: '⚡', isIncome: false },
+        { id: 'cat4', name: 'Mua sắm & Giải trí', icon: '🛍️', isIncome: false },
+        { id: 'cat5', name: 'Du lịch & Sự kiện', icon: '🏖️', isIncome: false },
+        { id: 'cat6', name: 'Tiền lương', icon: '💼', isIncome: true }
       ],
       events: [
-        { id: 'ev1', name: 'Chuyến đi Đà Nẵng', icon: '✈️', budget: 8000000, active: true },
-        { id: 'ev2', name: 'Đám cưới bạn thân', icon: '💒', budget: 2000000, active: true }
+        { id: 'ev1', name: 'Chuyến đi Đà Nẵng', icon: '✈️', budget: 8000000 }
       ],
       bills: [
-        { id: 'bill1', title: 'Tiền Điện & Internet FPT', amount: 1150000, dueDay: 28, categoryId: 'cat3', accountId: 'acc2', paidThisMonth: false },
-        { id: 'bill2', title: 'Gói Apple One / Netflix', amount: 260000, dueDay: 30, categoryId: 'cat4', accountId: 'acc2', paidThisMonth: false }
+        { id: 'bill1', title: 'Tiền Điện & Internet FPT', amount: 1150000, dueDay: 28, categoryId: 'cat3', accountId: 'acc2', paidThisMonth: false }
       ],
       transactions: [
-        { id: 'tx1', amount: 18000000, type: 'INCOME', date: '2026-10-25', note: 'Lương tháng 10', categoryId: 'cat6', sourceAccountId: 'acc2', destAccountId: null, eventId: '', withPerson: 'Công ty', location: '' },
-        { id: 'tx2', amount: 1650000, type: 'EXPENSE', date: '2026-10-25', note: 'Vé máy bay khứ hồi', categoryId: 'cat5', sourceAccountId: 'acc2', destAccountId: null, eventId: 'ev1', withPerson: 'Gia đình', location: 'Vietnam Airlines' },
-        { id: 'tx3', amount: 450000, type: 'EXPENSE', date: '2026-10-25', note: 'Lẩu nướng cuối tuần', categoryId: 'cat1', sourceAccountId: 'acc1', destAccountId: null, eventId: '', withPerson: 'Hội bạn', location: 'Gogi House' },
-        { id: 'tx4', amount: 1200000, type: 'EXPENSE', date: '2026-10-24', note: 'Đặt phòng khách sạn biển', categoryId: 'cat5', sourceAccountId: 'acc2', destAccountId: null, eventId: 'ev1', withPerson: '', location: 'Booking.com' }
+        { id: 'tx1', amount: 18000000, type: 'INCOME', date: '2026-10-25', note: 'Lương tháng 10', categoryId: 'cat6', sourceAccountId: 'acc2', eventId: '' },
+        { id: 'tx2', amount: 1650000, type: 'EXPENSE', date: '2026-10-25', note: 'Vé máy bay khứ hồi', categoryId: 'cat5', sourceAccountId: 'acc2', eventId: 'ev1' },
+        { id: 'tx3', amount: 450000, type: 'EXPENSE', date: '2026-10-25', note: 'Lẩu nướng cuối tuần', categoryId: 'cat1', sourceAccountId: 'acc1', eventId: '' }
       ],
       budgets: [
         { id: 'b1', categoryId: 'cat1', limit: 4000000 },
@@ -140,22 +288,21 @@
       ]
     };
 
-    function loadSaved() {
+    function loadData() {
       try {
         const s = localStorage.getItem(STORAGE_KEY);
         return s ? JSON.parse(s) : JSON.parse(JSON.stringify(initialSeed));
-      } catch {
+      } catch (e) {
         return JSON.parse(JSON.stringify(initialSeed));
       }
     }
-    function persist() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    function saveData() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
     }
 
-    let state = loadSaved();
+    let state = loadData();
     let activeTab = 'dashboard';
     let selectedWalletId = 'ALL';
-    let txFilter = 'ALL';
 
     function vnd(n) {
       return new Intl.NumberFormat('vi-VN').format(Math.round(n || 0)) + ' ₫';
@@ -163,22 +310,15 @@
     function showToast(msg) {
       const box = document.getElementById('toastBox');
       document.getElementById('toastText').textContent = msg;
-      box.classList.remove('hidden');
-      setTimeout(() => box.classList.add('hidden'), 3500);
+      box.classList.add('show');
+      setTimeout(() => box.classList.remove('show'), 3500);
     }
-    function hideToast() { document.getElementById('toastBox').classList.add('hidden'); }
+    function hideToast() { document.getElementById('toastBox').classList.remove('show'); }
 
-    function renderWalletPicker() {
-      const sel = document.getElementById('globalWalletSelect');
-      const spendableTotal = state.accounts.filter(a => !a.excludeFromTotal).reduce((s, a) => s + Number(a.balance), 0);
-      sel.innerHTML = `
-        <option value="ALL" ${selectedWalletId==='ALL'?'selected':''}>Tất cả ví khả dụng (${vnd(spendableTotal)})</option>
-        ${state.accounts.map(a => `
-          <option value="${a.id}" ${selectedWalletId===a.id?'selected':''}>
-            ${a.icon} ${a.name} (${vnd(a.balance)})${a.excludeFromTotal ? ' [Ẩn khỏi tổng]' : ''}
-          </option>
-        `).join('')}
-      `;
+    function closeModal() {
+      const m = document.getElementById('modalContainer');
+      m.classList.remove('show');
+      m.innerHTML = '';
     }
 
     function switchTab(tab) {
@@ -186,361 +326,298 @@
       closeModal();
       ['dashboard', 'budget', 'debt', 'events', 'analytics'].forEach(t => {
         const el = document.getElementById('tab_' + t);
-        el.className = t === tab
-          ? 'flex flex-col items-center py-1 rounded-xl text-emerald-500 font-semibold'
-          : 'flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium';
+        el.className = t === tab ? 'tab-item active' : 'tab-item';
       });
       render();
     }
 
-    function closeModal() {
-      const m = document.getElementById('modalContainer');
-      m.classList.add('hidden');
-      m.innerHTML = '';
-    }
-
     function render() {
-      persist();
-      renderWalletPicker();
+      saveData();
+      const sel = document.getElementById('globalWalletSelect');
+      const total = state.accounts.filter(a => !a.excludeFromTotal).reduce((s, a) => s + Number(a.balance), 0);
+      sel.innerHTML = `<option value="ALL" ${selectedWalletId==='ALL'?'selected':''}>Tất cả ví (${vnd(total)})</option>` +
+        state.accounts.map(a => `<option value="${a.id}" ${selectedWalletId===a.id?'selected':''}>${a.icon} ${a.name} (${vnd(a.balance)})</option>`).join('');
+
+      document.getElementById('headerCrownBtn').textContent = state.isPro ? '👑 VIP' : '👑 Nâng cấp';
+
       const c = document.getElementById('viewContainer');
       if (activeTab === 'dashboard') c.innerHTML = viewDashboard();
       else if (activeTab === 'budget') c.innerHTML = viewBudget();
       else if (activeTab === 'debt') c.innerHTML = viewDebt();
-      else if (activeTab === 'events') c.innerHTML = viewEventsAndBills();
-      else if (activeTab === 'analytics') c.innerHTML = viewAnalyticsAndWallets();
+      else if (activeTab === 'events') c.innerHTML = viewEvents();
+      else if (activeTab === 'analytics') c.innerHTML = viewVIP();
     }
 
     function viewDashboard() {
-      const walletFilteredTx = state.transactions.filter(t => selectedWalletId === 'ALL' || t.sourceAccountId === selectedWalletId || t.destAccountId === selectedWalletId);
-      const inc = walletFilteredTx.filter(t => t.type === 'INCOME').reduce((s, t) => s + Number(t.amount), 0);
-      const exp = walletFilteredTx.filter(t => t.type === 'EXPENSE').reduce((s, t) => s + Number(t.amount), 0);
+      const list = state.transactions.filter(t => selectedWalletId === 'ALL' || t.sourceAccountId === selectedWalletId);
+      const inc = list.filter(t => t.type === 'INCOME').reduce((s, t) => s + Number(t.amount), 0);
+      const exp = list.filter(t => t.type === 'EXPENSE').reduce((s, t) => s + Number(t.amount), 0);
       const net = inc - exp;
-      const filtered = walletFilteredTx.filter(t => txFilter === 'ALL' || t.type === txFilter);
-
-      const byDate = {};
-      filtered.forEach(tx => {
-        if (!byDate[tx.date]) byDate[tx.date] = [];
-        byDate[tx.date].push(tx);
-      });
-      const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
 
       return `
-        <div class="grid grid-cols-3 text-center text-xs font-semibold border-b border-[var(--border)] pb-2">
-          <span class="text-[var(--muted-foreground)]">Tháng 09/2026</span>
-          <span class="text-emerald-500 border-b-2 border-emerald-500 pb-1 font-bold">Tháng này (10/2026)</span>
-          <span class="text-[var(--muted-foreground)]">Tương lai</span>
+        ${!state.isPro ? `
+          <div class="vip-banner" onclick="openPaywallModal()">
+            <div>
+              <div class="text-xs bold">👑 MỞ KHÓA FINSMART PRO TRỌN ĐỜI</div>
+              <div class="text-xs">Không giới hạn Ví, Quét HĐ AI & Chia tiền nhóm</div>
+            </div>
+            <span class="btn" style="background:#000;color:#FBBF24;">399k</span>
+          </div>
+        ` : ''}
+
+        <div class="card">
+          <div class="row-between text-xs" style="margin-bottom:6px;"><span class="muted">Tiền vào tháng này</span><span class="bold green">+${vnd(inc)}</span></div>
+          <div class="row-between text-xs" style="margin-bottom:6px;"><span class="muted">Tiền ra tháng này</span><span class="bold red">-${vnd(exp)}</span></div>
+          <div class="row-between text-sm bold" style="border-top:1px solid var(--border);padding-top:6px;">
+            <span>Dòng tiền ròng</span>
+            <span class="${net>=0?'green':'red'}">${net>=0?'+':''}${vnd(net)}</span>
+          </div>
         </div>
-        <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-1.5">
-          <div class="flex justify-between text-xs"><span class="text-[var(--muted-foreground)]">Tiền vào (Thu nhập)</span><span class="font-bold text-emerald-500">+${vnd(inc)}</span></div>
-          <div class="flex justify-between text-xs"><span class="text-[var(--muted-foreground)]">Tiền ra (Chi tiêu)</span><span class="font-bold text-rose-500">-${vnd(exp)}</span></div>
-          <div class="border-t border-[var(--border)] pt-1.5 flex justify-between text-xs"><span class="font-semibold">Dòng tiền ròng tháng</span><span class="font-extrabold ${net>=0 ? 'text-emerald-500' : 'text-rose-500'}">${net>=0?'+':''}${vnd(net)}</span></div>
-        </div>
-        <div class="flex gap-1.5 overflow-x-auto pb-1">
-          ${[['ALL', 'Tất cả'], ['EXPENSE', 'Khoản chi'], ['INCOME', 'Khoản thu'], ['TRANSFER', 'Chuyển khoản']].map(([code, label]) => `
-            <button onclick="txFilter='${code}';render()" class="px-3 py-1 rounded-full text-xs font-semibold border ${txFilter===code ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-[var(--secondary)] text-[var(--foreground)] border-[var(--border)]'}">${label}</button>
-          `).join('')}
-        </div>
-        <div class="space-y-3">
-          ${sortedDates.map(dateStr => {
-            const dayList = byDate[dateStr];
-            const dayNet = dayList.reduce((s, t) => t.type === 'INCOME' ? s + Number(t.amount) : (t.type === 'EXPENSE' ? s - Number(t.amount) : s), 0);
-            return `
-              <div class="rounded-2xl bg-[var(--background)] border border-[var(--border)] overflow-hidden">
-                <div class="px-3.5 py-2 bg-[var(--secondary)] flex items-center justify-between border-b border-[var(--border)]">
-                  <span class="text-sm font-extrabold">${dateStr.slice(8,10)}/${dateStr.slice(5,7)}</span>
-                  <span class="text-xs font-bold ${dayNet>=0 ? 'text-emerald-500' : 'text-[var(--foreground)]'}">${dayNet>=0 ? '+' : ''}${vnd(dayNet)}</span>
-                </div>
-                <div class="divide-y divide-[var(--border)]">
-                  ${dayList.map(tx => {
-                    const cat = state.categories.find(c => c.id === tx.categoryId);
-                    const src = state.accounts.find(a => a.id === tx.sourceAccountId);
-                    const ev = state.events.find(e => e.id === tx.eventId);
-                    const isTr = tx.type === 'TRANSFER';
-                    const title = isTr ? 'Chuyển khoản nội bộ' : (cat?.name || 'Giao dịch');
-                    const amtColor = tx.type === 'INCOME' ? 'text-emerald-500' : (tx.type === 'EXPENSE' ? 'text-rose-500' : 'text-blue-500');
-                    const sign = tx.type === 'INCOME' ? '+' : (tx.type === 'EXPENSE' ? '-' : '');
-                    return `
-                      <div class="p-3 flex items-center justify-between">
-                        <div class="flex items-center gap-2.5">
-                          <div class="w-9 h-9 rounded-full bg-[var(--secondary)] flex items-center justify-center text-base">${isTr ? '🔄' : (cat?.icon || '💸')}</div>
-                          <div>
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                              <span class="text-sm font-semibold">${title}</span>
-                              ${ev ? `<span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-500 text-xs font-medium">${ev.icon} ${ev.name}</span>` : ''}
-                              ${tx.location ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 text-xs font-medium">📍 ${tx.location}</span>` : ''}
-                            </div>
-                            <div class="text-xs text-[var(--muted-foreground)]">${src?.name || ''} ${tx.note ? '• ' + tx.note : ''} ${tx.withPerson ? '• 👥 ' + tx.withPerson : ''}</div>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                          <span class="text-sm font-bold ${amtColor}">${sign}${vnd(tx.amount)}</span>
-                          <button onclick="deleteTx('${tx.id}')" class="text-xs text-[var(--muted-foreground)]">✕</button>
-                        </div>
-                      </div>
-                    `;
-                  }).join('')}
+
+        ${list.map(tx => {
+          const cat = state.categories.find(c => c.id === tx.categoryId);
+          const src = state.accounts.find(a => a.id === tx.sourceAccountId);
+          const isInc = tx.type === 'INCOME';
+          return `
+            <div class="tx-row">
+              <div class="row-start">
+                <div class="icon-circle">${cat ? cat.icon : '💸'}</div>
+                <div>
+                  <div class="text-sm bold">${cat ? cat.name : 'Giao dịch'}</div>
+                  <div class="text-xs muted">${src ? src.name : ''} ${tx.note ? '• ' + tx.note : ''}</div>
                 </div>
               </div>
-            `;
-          }).join('')}
-        </div>
+              <div class="row-start">
+                <span class="text-sm bold ${isInc?'green':'red'}">${isInc?'+':'-'}${vnd(tx.amount)}</span>
+                <span style="cursor:pointer;color:#999;padding-left:6px;" onclick="deleteTx('${tx.id}')">✕</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
       `;
     }
 
     function viewBudget() {
-      return `
-        <div class="space-y-3">
-          ${state.budgets.map(b => {
-            const cat = state.categories.find(c => c.id === b.categoryId);
-            const spent = state.transactions.filter(t => t.type === 'EXPENSE' && t.categoryId === b.categoryId).reduce((s, t) => s + Number(t.amount), 0);
-            const ratio = b.limit > 0 ? (spent / b.limit) : 0;
-            const pct = Math.round(ratio * 100);
-            const barClass = ratio >= 1 ? 'bg-rose-500' : (ratio >= 0.8 ? 'bg-amber-500' : 'bg-emerald-500');
-            return `
-              <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
-                <div class="flex items-center justify-between"><span class="text-sm font-bold">${cat ? cat.icon + ' ' + cat.name : 'Ngân sách'}</span><span class="text-xs font-bold">${pct}%</span></div>
-                <div class="w-full h-2.5 bg-[var(--secondary)] rounded-full overflow-hidden"><div class="h-full ${barClass}" style="width:${Math.min(pct, 100)}%"></div></div>
-                <div class="flex justify-between text-xs text-[var(--muted-foreground)]"><span>Đã chi: ${vnd(spent)}</span><span>Hạn mức: <strong class="text-[var(--foreground)]">${vnd(b.limit)}</strong></span></div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      `;
+      return state.budgets.map(b => {
+        const cat = state.categories.find(c => c.id === b.categoryId);
+        const spent = state.transactions.filter(t => t.type === 'EXPENSE' && t.categoryId === b.categoryId).reduce((s, t) => s + Number(t.amount), 0);
+        const pct = b.limit > 0 ? Math.min(100, Math.round((spent / b.limit) * 100)) : 0;
+        return `
+          <div class="card">
+            <div class="row-between text-sm bold">
+              <span>${cat ? cat.icon + ' ' + cat.name : 'Ngân sách'}</span>
+              <span>${pct}%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pct>=100?'var(--red)':'var(--green)'}"></div></div>
+            <div class="row-between text-xs muted">
+              <span>Đã chi: ${vnd(spent)}</span>
+              <span>Hạn mức: <strong style="color:var(--text)">${vnd(b.limit)}</strong></span>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function viewDebt() {
-      const receivable = state.debts.filter(d => d.type === 'LENT' && !d.settled).reduce((s, d) => s + Math.max(0, d.total - d.paid), 0);
-      const payable = state.debts.filter(d => d.type === 'BORROWED' && !d.settled).reduce((s, d) => s + Math.max(0, d.total - d.paid), 0);
+      const rec = state.debts.filter(d => d.type === 'LENT' && !d.settled).reduce((s, d) => s + (d.total - d.paid), 0);
+      const pay = state.debts.filter(d => d.type === 'BORROWED' && !d.settled).reduce((s, d) => s + (d.total - d.paid), 0);
       return `
-        <div class="grid grid-cols-2 gap-2.5">
-          <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]"><div class="text-xs font-semibold text-teal-500">↗ Cần thu (Cho vay)</div><div class="text-base font-extrabold mt-1">${vnd(receivable)}</div></div>
-          <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]"><div class="text-xs font-semibold text-amber-500">↙ Phải trả (Đi vay)</div><div class="text-base font-extrabold mt-1">${vnd(payable)}</div></div>
+        <div class="grid-2">
+          <div class="card" style="margin:0;"><div class="text-xs bold teal">↗ Cần thu (Cho vay)</div><div class="text-sm bold" style="margin-top:4px;">${vnd(rec)}</div></div>
+          <div class="card" style="margin:0;"><div class="text-xs bold amber">↙ Phải trả (Đi vay)</div><div class="text-sm bold" style="margin-top:4px;">${vnd(pay)}</div></div>
         </div>
-        <div class="space-y-2.5">
-          ${state.debts.map(d => {
-            const remain = Math.max(0, d.total - d.paid);
-            const pct = d.total > 0 ? Math.min(100, Math.round((d.paid / d.total) * 100)) : 100;
-            const isLent = d.type === 'LENT';
-            return `
-              <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <span class="text-sm font-bold">${d.person}</span>
-                    <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${isLent ? 'bg-teal-500/15 text-teal-500' : 'bg-amber-500/15 text-amber-500'}">${isLent ? 'Cho vay' : 'Đi vay'}</span>
-                    <div class="text-xs text-[var(--muted-foreground)] mt-0.5">${d.note || ''}</div>
-                  </div>
-                  <div class="text-right"><div class="text-sm font-extrabold">${vnd(remain)}</div><div class="text-xs text-[var(--muted-foreground)]">Gốc: ${vnd(d.total)}</div></div>
-                </div>
-                <div class="w-full h-2 bg-[var(--secondary)] rounded-full overflow-hidden"><div class="h-full ${d.settled ? 'bg-emerald-500' : (isLent ? 'bg-teal-500' : 'bg-amber-500')}" style="width:${pct}%"></div></div>
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-[var(--muted-foreground)]">📅 Hạn: ${d.due}</span>
-                  ${d.settled ? `<span class="text-emerald-500 font-bold">✓ Đã tất toán</span>` : `<button onclick="quickSettleDebt('${d.id}')" class="px-3 py-1 rounded-full text-xs font-semibold text-white ${isLent ? 'bg-teal-600' : 'bg-amber-600'}">${isLent ? 'Thu hết nợ' : 'Trả hết nợ'}</button>`}
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      `;
-    }
-
-    function viewEventsAndBills() {
-      return `
-        <div class="space-y-2">
-          <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">✈️ Sự kiện & Chuyến đi (Travel Mode)</div>
-          ${state.events.map(ev => {
-            const spent = state.transactions.filter(t => t.type === 'EXPENSE' && t.eventId === ev.id).reduce((s, t) => s + Number(t.amount), 0);
-            const txCount = state.transactions.filter(t => t.eventId === ev.id).length;
-            const pct = ev.budget > 0 ? Math.min(100, Math.round((spent / ev.budget) * 100)) : 0;
-            return `
-              <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
-                <div class="flex justify-between items-center">
-                  <div><span class="text-sm font-bold">${ev.icon} ${ev.name}</span><div class="text-xs text-[var(--muted-foreground)]">${txCount} giao dịch</div></div>
-                  <div class="text-right"><div class="text-sm font-extrabold text-rose-500">${vnd(spent)}</div><div class="text-xs text-[var(--muted-foreground)]">Dự kiến: ${vnd(ev.budget)}</div></div>
-                </div>
-                <div class="w-full h-2 bg-[var(--secondary)] rounded-full overflow-hidden"><div class="h-full bg-blue-500" style="width:${pct}%"></div></div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-        <div class="space-y-2 pt-2">
-          <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">🧾 Hóa đơn định kỳ hàng tháng (1-Chạm)</div>
-          ${state.bills.map(bill => `
-            <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-between">
-              <div><div class="text-sm font-bold">${bill.title}</div><div class="text-sm font-extrabold text-rose-500 mt-1">${vnd(bill.amount)}</div></div>
-              ${bill.paidThisMonth ? `<span class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-500 text-xs font-bold">✓ Đã trả</span>` : `<button onclick="payBillNow('${bill.id}')" class="px-3 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold">Trả ngay</button>`}
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    function viewAnalyticsAndWallets() {
-      return `
-        <div class="space-y-2">
-          <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">👛 Quản lý Ví (Chế độ Không tính vào tổng)</div>
-          ${state.accounts.map(a => `
-            <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <span class="text-lg">${a.icon}</span>
+        ${state.debts.map(d => {
+          const rem = Math.max(0, d.total - d.paid);
+          const pct = d.total > 0 ? Math.round((d.paid / d.total) * 100) : 100;
+          return `
+            <div class="card">
+              <div class="row-between">
                 <div>
-                  <div class="text-sm font-bold">${a.name}</div>
-                  <button onclick="toggleExcludeWallet('${a.id}')" class="text-xs underline ${a.excludeFromTotal ? 'text-amber-500' : 'text-[var(--muted-foreground)]'}">
-                    ${a.excludeFromTotal ? '🔒 Đang ẩn khỏi tổng khả dụng' : '✓ Tính vào tổng khả dụng'}
-                  </button>
+                  <span class="text-sm bold">${d.person}</span>
+                  <div class="text-xs muted">${d.note || ''}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="text-sm bold">${vnd(rem)}</div>
+                  <div class="text-xs muted">Gốc: ${vnd(d.total)}</div>
                 </div>
               </div>
-              <div class="text-sm font-extrabold">${vnd(a.balance)}</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+              <div class="row-between text-xs">
+                <span class="muted">📅 Hạn: ${d.due}</span>
+                ${d.settled ? `<span class="bold green">✓ Đã tất toán</span>` : `<button class="btn btn-green" onclick="settleDebt('${d.id}')">${d.type==='LENT'?'Thu hết nợ':'Trả hết nợ'}</button>`}
+              </div>
             </div>
-          `).join('')}
+          `;
+        }).join('')}
+        <button class="btn btn-blue" style="width:100%;padding:11px;" onclick="openDebtModal()">+ Thêm khoản Vay / Cho vay</button>
+      `;
+    }
+
+    function viewEvents() {
+      return `
+        <div class="text-xs bold muted" style="margin-bottom:8px;">✈️ SỰ KIỆN & DU LỊCH</div>
+        ${state.events.map(ev => {
+          const spent = state.transactions.filter(t => t.type === 'EXPENSE' && t.eventId === ev.id).reduce((s, t) => s + Number(t.amount), 0);
+          return `
+            <div class="card row-between">
+              <span class="text-sm bold">${ev.icon} ${ev.name}</span>
+              <span class="text-sm bold red">${vnd(spent)}</span>
+            </div>
+          `;
+        }).join('')}
+        <div class="text-xs bold muted" style="margin:12px 0 8px;">🧾 HÓA ĐƠN ĐỊNH KỲ HÀNG THÁNG</div>
+        ${state.bills.map(b => `
+          <div class="card row-between">
+            <div>
+              <div class="text-sm bold">${b.title}</div>
+              <div class="text-sm bold red">${vnd(b.amount)}</div>
+            </div>
+            ${b.paidThisMonth ? `<span class="text-xs bold green">✓ Đã trả</span>` : `<button class="btn btn-green" onclick="payBill('${b.id}')">Trả ngay</button>`}
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function viewVIP() {
+      return `
+        <div class="card" style="background:#1E3C72;color:#fff;">
+          <div class="text-sm bold">👑 ${state.isPro ? 'FinSmart Pro VIP (Đã mở khóa)' : 'FinSmart Bản Miễn Phí (Free)'}</div>
+          <div class="text-xs" style="opacity:0.85;margin:4px 0 10px;">${state.isPro ? 'Đã kích hoạt trọn đời không giới hạn' : 'Giới hạn 2 Ví. Nâng cấp để mở khóa toàn bộ.'}</div>
+          ${!state.isPro ? `<button class="btn" style="background:#FBBF24;color:#000;width:100%;padding:10px;" onclick="openPaywallModal()">Mở Bảng Giá Nâng Cấp Pro</button>` : ''}
         </div>
+        <div class="row-between" style="margin:10px 0 6px;">
+          <span class="text-xs bold muted">DANH SÁCH VÍ (${state.accounts.length})</span>
+          <button class="btn btn-blue" onclick="tryAddWallet()">+ Thêm Ví</button>
+        </div>
+        ${state.accounts.map(a => `
+          <div class="tx-row">
+            <span class="text-sm bold">${a.icon} ${a.name}</span>
+            <span class="text-sm bold">${vnd(a.balance)}</span>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    // MODALS
+    function openTxModal() {
+      const m = document.getElementById('modalContainer');
+      m.classList.add('show');
+      m.innerHTML = `
+        <div class="row-between" style="margin-bottom:8px;"><span class="text-sm bold">Thêm Giao Dịch Mới</span><span style="cursor:pointer;" onclick="closeModal()">✕</span></div>
+        <select id="m_type" class="select"><option value="EXPENSE">Khoản chi (-)</option><option value="INCOME">Khoản thu (+)</option></select>
+        <input id="m_amt" type="number" class="input" placeholder="Nhập số tiền (VND)" />
+        <select id="m_cat" class="select">${state.categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}</select>
+        <input id="m_note" type="text" class="input" placeholder="Ghi chú giao dịch..." />
+        <button class="btn btn-green" style="width:100%;padding:10px;" onclick="saveTx()">Lưu Vào Sổ</button>
+      `;
+    }
+    function saveTx() {
+      const type = document.getElementById('m_type').value;
+      const amt = Number(document.getElementById('m_amt').value);
+      const catId = document.getElementById('m_cat').value;
+      const note = document.getElementById('m_note').value.trim();
+      if (!amt || amt <= 0) return showToast('Vui lòng nhập số tiền lớn hơn 0!');
+      state.accounts[0].balance += (type === 'INCOME' ? amt : -amt);
+      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: amt, type, date: '2026-10-25', note, categoryId: catId, sourceAccountId: state.accounts[0].id, eventId: '' });
+      closeModal();
+      render();
+      showToast('Đã lưu giao dịch thành công!');
+    }
+    function deleteTx(id) {
+      state.transactions = state.transactions.filter(t => t.id !== id);
+      render();
+    }
+
+    function openPaywallModal() {
+      const m = document.getElementById('modalContainer');
+      m.classList.add('show');
+      m.innerHTML = `
+        <div class="row-between" style="margin-bottom:8px;"><span class="text-sm bold">👑 Nâng cấp FinSmart Pro VIP</span><span style="cursor:pointer;" onclick="closeModal()">✕</span></div>
+        <div class="card text-xs">
+          <div>• Gói Trọn Đời (Mua 1 lần): <strong>399.000 ₫</strong></div>
+          <div>• Gói Hàng Năm: <strong>199.000 ₫ / năm</strong></div>
+          <div>• Gói Hàng Tháng: <strong>29.000 ₫ / tháng</strong></div>
+        </div>
+        <button class="btn" style="background:#F59E0B;color:#000;width:100%;padding:11px;" onclick="state.isPro=true;closeModal();render();showToast('🎉 Đã kích hoạt FinSmart Pro VIP!')"> Kích hoạt FinSmart Pro Ngay</button>
       `;
     }
 
     function openOCRModal() {
-      const m = document.getElementById('modalContainer');
-      m.classList.remove('hidden');
-      m.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="flex justify-between items-center"><span class="text-sm font-bold">📸 Quét Hóa Đơn AI (OCR)</span><button onclick="closeModal()" class="text-xs">✕</button></div>
-          <div class="grid grid-cols-3 gap-1.5">
-            <button onclick="fillOCR('Highlands Coffee', 145000, 'cat1')" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold">☕ Highlands<br/><span class="text-rose-500">145.000₫</span></button>
-            <button onclick="fillOCR('Siêu thị WinMart', 680000, 'cat1')" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold">🛒 WinMart<br/><span class="text-rose-500">680.000₫</span></button>
-            <button onclick="fillOCR('Trạm xăng Petrolimex', 120000, 'cat2')" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold">⛽ Petrolimex<br/><span class="text-rose-500">120.000₫</span></button>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="ocr_merchant" type="text" value="Highlands Coffee" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-semibold" />
-            <input id="ocr_amt" type="number" value="145000" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold text-rose-500" />
-          </div>
-          <input type="hidden" id="ocr_cat" value="cat1" />
-          <button onclick="saveOCRTx()" class="w-full py-2 rounded-xl bg-blue-600 text-white text-xs font-bold">Lưu Hóa Đơn Vào Sổ</button>
-        </div>
-      `;
-    }
-    function fillOCR(m, a, c) {
-      document.getElementById('ocr_merchant').value = m;
-      document.getElementById('ocr_amt').value = a;
-      document.getElementById('ocr_cat').value = c;
-    }
-    function saveOCRTx() {
-      const merchant = document.getElementById('ocr_merchant').value.trim();
-      const amount = Number(document.getElementById('ocr_amt').value);
-      const catId = document.getElementById('ocr_cat').value;
-      if (!amount || amount <= 0) return;
-      state.accounts[0].balance -= amount;
-      state.transactions.unshift({ id: 'tx_' + Date.now(), amount, type: 'EXPENSE', date: '2026-10-25', note: 'Quét hóa đơn OCR', categoryId: catId, sourceAccountId: state.accounts[0].id, destAccountId: null, eventId: '', withPerson: '', location: merchant });
-      closeModal();
-      switchTab('dashboard');
-      showToast(`📸 Đã lưu hóa đơn "${merchant}"!`);
+      state.accounts[0].balance -= 145000;
+      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: 145000, type: 'EXPENSE', date: '2026-10-25', note: 'Quét HĐ AI: Highlands Coffee', categoryId: 'cat1', sourceAccountId: 'acc1', eventId: '' });
+      render();
+      showToast('📸 Đã quét hóa đơn Highlands Coffee (145.000 ₫)!');
     }
 
     function openSplitBillModal() {
       const m = document.getElementById('modalContainer');
-      m.classList.remove('hidden');
+      m.classList.add('show');
       m.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="flex justify-between items-center"><span class="text-sm font-bold">🍕 Chia Tiền Nhóm</span><button onclick="closeModal()" class="text-xs">✕</button></div>
-          <div class="grid grid-cols-2 gap-2">
-            <input id="sp_title" type="text" value="Ăn lẩu cuối tuần" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]" />
-            <input id="sp_total" type="number" value="1200000" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold" />
-          </div>
-          <input id="sp_friends" type="text" value="Minh, Lan" class="w-full p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]" />
-          <button onclick="executeSplitBill()" class="w-full py-2 rounded-xl bg-purple-600 text-white text-xs font-bold">Chia Tiền & Tạo Khoản Phải Thu</button>
-        </div>
+        <div class="row-between" style="margin-bottom:8px;"><span class="text-sm bold">🍕 Chia Tiền Nhóm</span><span style="cursor:pointer;" onclick="closeModal()">✕</span></div>
+        <input id="sp_total" type="number" class="input" value="1200000" placeholder="Tổng hóa đơn (VND)" />
+        <input id="sp_friends" type="text" class="input" value="Minh, Lan" placeholder="Tên các bạn (cách dấu phẩy)" />
+        <button class="btn btn-blue" style="width:100%;padding:10px;" onclick="runSplit()">Chia Đều & Tự Tạo Sổ Nợ</button>
       `;
     }
-    function executeSplitBill() {
-      const title = document.getElementById('sp_title').value.trim() || 'Chia bill';
+    function runSplit() {
       const total = Number(document.getElementById('sp_total').value);
       const friends = document.getElementById('sp_friends').value.split(',').map(s => s.trim()).filter(Boolean);
-      if (!total || total <= 0 || !friends.length) return;
-      const headCount = friends.length + 1;
-      const share = Math.round(total / headCount);
-      const acc = state.accounts[1] || state.accounts[0];
-      acc.balance -= total;
-      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: total, type: 'EXPENSE', date: '2026-10-25', note: `${title} (Chia ${headCount} người)`, categoryId: 'cat1', sourceAccountId: acc.id, destAccountId: null, eventId: '', withPerson: friends.join(', '), location: '' });
-      friends.forEach(f => state.debts.unshift({ id: 'd_' + Date.now() + Math.random(), person: f, type: 'LENT', total: share, paid: 0, due: '2026-11-05', note: `Chia tiền: ${title}`, settled: false }));
+      if (!total || !friends.length) return;
+      const share = Math.round(total / (friends.length + 1));
+      state.accounts[0].balance -= total;
+      friends.forEach(f => state.debts.unshift({ id: 'd_' + Date.now() + Math.random(), person: f, type: 'LENT', total: share, paid: 0, due: '2026-11-10', note: 'Chia hóa đơn nhóm', settled: false }));
       closeModal();
       switchTab('debt');
       showToast(`🍕 Đã chia bill & tạo ${friends.length} khoản phải thu trong Sổ Nợ!`);
     }
 
     function openAdjustBalanceModal() {
-      const targetAcc = state.accounts.find(a => a.id === selectedWalletId) || state.accounts[0];
+      const acc = state.accounts[0];
       const m = document.getElementById('modalContainer');
-      m.classList.remove('hidden');
+      m.classList.add('show');
       m.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="flex justify-between items-center"><span class="text-sm font-bold">⚖️ Chỉnh số dư (${targetAcc.name})</span><button onclick="closeModal()" class="text-xs">✕</button></div>
-          <input id="adj_actual" type="number" value="${targetAcc.balance}" class="w-full p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold" />
-          <button onclick="confirmAdjustBalance('${targetAcc.id}')" class="w-full py-2 rounded-xl bg-amber-600 text-white text-xs font-bold">Cân Bằng Số Dư Ngay</button>
-        </div>
+        <div class="row-between" style="margin-bottom:8px;"><span class="text-sm bold">⚖️ Điều chỉnh số dư (${acc.name})</span><span style="cursor:pointer;" onclick="closeModal()">✕</span></div>
+        <input id="adj_val" type="number" class="input" value="${acc.balance}" />
+        <button class="btn btn-green" style="width:100%;padding:10px;" onclick="acc.balance=Number(document.getElementById('adj_val').value);closeModal();render();showToast('⚖️ Đã cân bằng số dư!')">Cập Nhật Số Dư</button>
       `;
-    }
-    function confirmAdjustBalance(accId) {
-      const acc = state.accounts.find(a => a.id === accId);
-      const actual = Number(document.getElementById('adj_actual').value);
-      const diff = actual - acc.balance;
-      if (diff === 0) { closeModal(); return; }
-      acc.balance = actual;
-      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: Math.abs(diff), type: diff > 0 ? 'INCOME' : 'EXPENSE', date: '2026-10-25', note: 'Điều chỉnh cân bằng số dư thực tế', categoryId: diff > 0 ? 'cat7' : 'cat1', sourceAccountId: acc.id, destAccountId: null, eventId: '', withPerson: '', location: '' });
-      closeModal();
-      render();
-      showToast(`⚖️ Đã cân bằng số dư "${acc.name}"!`);
     }
 
-    function openTxModal() {
+    function openDebtModal() {
       const m = document.getElementById('modalContainer');
-      m.classList.remove('hidden');
+      m.classList.add('show');
       m.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="flex justify-between items-center"><span class="text-sm font-bold">Thêm Giao dịch</span><button onclick="closeModal()" class="text-xs">✕</button></div>
-          <div class="grid grid-cols-2 gap-2">
-            <select id="m_tx_type" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]"><option value="EXPENSE">Khoản chi (-)</option><option value="INCOME">Khoản thu (+)</option></select>
-            <input id="m_tx_amount" type="number" placeholder="Số tiền (VND)" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold" />
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <select id="m_tx_src" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]">${state.accounts.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}</select>
-            <select id="m_tx_cat" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]">${state.categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}</select>
-          </div>
-          <input id="m_tx_note" type="text" placeholder="Ghi chú..." class="w-full p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]" />
-          <button onclick="saveNewTx()" class="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">Lưu Giao Dịch</button>
-        </div>
+        <div class="row-between" style="margin-bottom:8px;"><span class="text-sm bold">Thêm Vay / Cho Vay</span><span style="cursor:pointer;" onclick="closeModal()">✕</span></div>
+        <select id="d_type" class="select"><option value="LENT">Cho vay (Phải thu)</option><option value="BORROWED">Đi vay (Phải trả)</option></select>
+        <input id="d_person" type="text" class="input" placeholder="Tên người vay / Chủ nợ" />
+        <input id="d_amt" type="number" class="input" placeholder="Số tiền (VND)" />
+        <button class="btn btn-green" style="width:100%;padding:10px;" onclick="saveDebt()">Lưu Sổ Nợ</button>
       `;
     }
-    function saveNewTx() {
-      const type = document.getElementById('m_tx_type').value;
-      const amount = Number(document.getElementById('m_tx_amount').value);
-      const srcId = document.getElementById('m_tx_src').value;
-      const catId = document.getElementById('m_tx_cat').value;
-      const note = document.getElementById('m_tx_note').value.trim();
-      if (!amount || amount <= 0) return;
-      const acc = state.accounts.find(a => a.id === srcId);
-      if (type === 'INCOME' && acc) acc.balance += amount;
-      if (type === 'EXPENSE' && acc) acc.balance -= amount;
-      state.transactions.unshift({ id: 'tx_' + Date.now(), amount, type, date: '2026-10-25', note, categoryId: catId, sourceAccountId: srcId, destAccountId: null, eventId: '', withPerson: '', location: '' });
+    function saveDebt() {
+      const person = document.getElementById('d_person').value.trim();
+      const total = Number(document.getElementById('d_amt').value);
+      if (!person || !total) return;
+      state.debts.unshift({ id: 'd_' + Date.now(), person, type: document.getElementById('d_type').value, total, paid: 0, due: '2026-12-30', note: '', settled: false });
       closeModal();
       render();
+      showToast('Đã thêm vào Sổ nợ!');
     }
-    function deleteTx(id) {
-      const idx = state.transactions.findIndex(t => t.id === id);
-      if (idx > -1) { state.transactions.splice(idx, 1); render(); }
+    function settleDebt(id) {
+      const d = state.debts.find(x => x.id === id);
+      if (d) { d.paid = d.total; d.settled = true; render(); showToast('✓ Đã tất toán xong!'); }
     }
-    function payBillNow(billId) {
-      const b = state.bills.find(x => x.id === billId);
-      if (!b || b.paidThisMonth) return;
-      b.paidThisMonth = true;
-      const acc = state.accounts.find(a => a.id === b.accountId);
-      if (acc) acc.balance -= b.amount;
-      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: b.amount, type: 'EXPENSE', date: '2026-10-25', note: 'Thanh toán hóa đơn: ' + b.title, categoryId: b.categoryId, sourceAccountId: b.accountId, destAccountId: null, eventId: '', withPerson: '', location: '' });
+    function payBill(id) {
+      const b = state.bills.find(x => x.id === id);
+      if (b) { b.paidThisMonth = true; state.accounts[1].balance -= b.amount; render(); showToast('✓ Đã thanh toán hóa đơn!'); }
+    }
+    function tryAddWallet() {
+      if (!state.isPro && state.accounts.length >= 2) {
+        showToast('🔒 Bản Free tối đa 2 Ví. Hãy bấm kích hoạt Pro!');
+        openPaywallModal();
+        return;
+      }
+      state.accounts.push({ id: 'acc_' + Date.now(), name: 'Ví MoMo', type: 'Ví điện tử', balance: 3000000, icon: '📱', excludeFromTotal: false });
       render();
-    }
-    function toggleExcludeWallet(accId) {
-      const a = state.accounts.find(x => x.id === accId);
-      if (a) { a.excludeFromTotal = !a.excludeFromTotal; render(); }
-    }
-    function quickSettleDebt(debtId) {
-      const d = state.debts.find(x => x.id === debtId);
-      if (d && !d.settled) { d.paid = d.total; d.settled = true; render(); }
     }
 
     render();
