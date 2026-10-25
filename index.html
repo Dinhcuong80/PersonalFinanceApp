@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FinSmart Pro" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>FinSmart Pro - Full Money Lover Edition</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #F2F2F7;
+      --card: #FFFFFF;
+      --sidebar: #FFFFFF;
+      --secondary: #E5E5EA;
+      --foreground: #000000;
+      --muted-foreground: #6C6C70;
+      --border: rgba(60, 60, 67, 0.14);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #000000;
+        --card: #1C1C1E;
+        --sidebar: #1C1C1E;
+        --secondary: #2C2C2E;
+        --foreground: #FFFFFF;
+        --muted-foreground: #98989D;
+        --border: rgba(84, 84, 88, 0.45);
+      }
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-2 md:p-6">
+
+  <div class="max-w-md mx-auto bg-[var(--card)] border border-[var(--border)] rounded-3xl shadow-xl overflow-hidden flex flex-col">
+
+    <!-- Money Lover Top Header -->
+    <div class="px-4 pt-4 pb-3 border-b border-[var(--border)] bg-[var(--sidebar)] space-y-2">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">👛</span>
+          <div>
+            <div class="text-xs text-[var(--muted-foreground)]">Ví đang chọn</div>
+            <select id="globalWalletSelect" onchange="selectedWalletId=this.value;render()" class="bg-transparent text-sm font-bold text-[var(--foreground)] outline-none cursor-pointer">
+            </select>
+          </div>
+        </div>
+        <button onclick="openTxModal()" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">
+          + Ghi chép
+        </button>
+      </div>
+
+      <!-- Quick Pro Toolbar -->
+      <div class="grid grid-cols-3 gap-1.5 pt-1">
+        <button onclick="openOCRModal()" class="py-1.5 px-2 rounded-xl bg-blue-500/10 text-blue-500 text-xs font-semibold flex items-center justify-center gap-1">
+          <span>📸</span><span>Quét HĐ AI</span>
+        </button>
+        <button onclick="openSplitBillModal()" class="py-1.5 px-2 rounded-xl bg-purple-500/10 text-purple-500 text-xs font-semibold flex items-center justify-center gap-1">
+          <span>🍕</span><span>Chia tiền nhóm</span>
+        </button>
+        <button onclick="openAdjustBalanceModal()" class="py-1.5 px-2 rounded-xl bg-amber-500/10 text-amber-500 text-xs font-semibold flex items-center justify-center gap-1">
+          <span>⚖️</span><span>Chỉnh số dư</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="toastBox" class="hidden mx-4 mt-2.5 px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-medium flex items-center justify-between">
+      <span id="toastText">Thông báo</span>
+      <button onclick="hideToast()" class="ml-2 font-bold">✕</button>
+    </div>
+
+    <div id="viewContainer" class="p-4 space-y-3.5 min-h-[540px]"></div>
+
+    <div id="modalContainer" class="hidden border-t border-[var(--border)] bg-[var(--sidebar)] p-4"></div>
+
+    <div class="border-t border-[var(--border)] bg-[var(--sidebar)] px-1.5 py-2 grid grid-cols-5 gap-1">
+      <button onclick="switchTab('dashboard')" id="tab_dashboard" class="flex flex-col items-center py-1 rounded-xl text-emerald-500 font-semibold">
+        <span class="text-base">📒</span>
+        <span class="text-xs mt-0.5">Sổ thu chi</span>
+      </button>
+      <button onclick="switchTab('budget')" id="tab_budget" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
+        <span class="text-base">🎯</span>
+        <span class="text-xs mt-0.5">Ngân sách</span>
+      </button>
+      <button onclick="switchTab('debt')" id="tab_debt" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
+        <span class="text-base">🤝</span>
+        <span class="text-xs mt-0.5">Sổ nợ</span>
+      </button>
+      <button onclick="switchTab('events')" id="tab_events" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
+        <span class="text-base">✈️</span>
+        <span class="text-xs mt-0.5">Sự kiện & HĐ</span>
+      </button>
+      <button onclick="switchTab('analytics')" id="tab_analytics" class="flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium">
+        <span class="text-base">📊</span>
+        <span class="text-xs mt-0.5">Báo cáo & Ví</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'FINSMART_MONEYLOVER_PRO_V2';
+    const initialSeed = {
+      accounts: [
+        { id: 'acc1', name: 'Tiền mặt', type: 'Tiền mặt', balance: 2500000, icon: '💵', excludeFromTotal: false },
+        { id: 'acc2', name: 'Techcombank', type: 'Ngân hàng', balance: 15000000, icon: '🏦', excludeFromTotal: false },
+        { id: 'acc3', name: 'Sổ Tiết kiệm Dài hạn', type: 'Tiết kiệm', balance: 50000000, icon: '🔒', excludeFromTotal: true }
+      ],
+      categories: [
+        { id: 'cat1', name: 'Ăn uống', icon: '🍜', group: 'NEEDS', isIncome: false },
+        { id: 'cat2', name: 'Di chuyển', icon: '🚗', group: 'NEEDS', isIncome: false },
+        { id: 'cat3', name: 'Hóa đơn & Tiện ích', icon: '⚡', group: 'NEEDS', isIncome: false },
+        { id: 'cat4', name: 'Mua sắm & Giải trí', icon: '🛍️', group: 'WANTS', isIncome: false },
+        { id: 'cat5', name: 'Du lịch & Nghỉ dưỡng', icon: '🏖️', group: 'WANTS', isIncome: false },
+        { id: 'cat6', name: 'Tiền lương', icon: '💼', group: 'INCOME', isIncome: true },
+        { id: 'cat7', name: 'Thưởng & Đầu tư', icon: '📈', group: 'INCOME', isIncome: true }
+      ],
+      events: [
+        { id: 'ev1', name: 'Chuyến đi Đà Nẵng', icon: '✈️', budget: 8000000, active: true },
+        { id: 'ev2', name: 'Đám cưới bạn thân', icon: '💒', budget: 2000000, active: true }
+      ],
+      bills: [
+        { id: 'bill1', title: 'Tiền Điện & Internet FPT', amount: 1150000, dueDay: 28, categoryId: 'cat3', accountId: 'acc2', paidThisMonth: false },
+        { id: 'bill2', title: 'Gói Apple One / Netflix', amount: 260000, dueDay: 30, categoryId: 'cat4', accountId: 'acc2', paidThisMonth: false }
+      ],
+      transactions: [
+        { id: 'tx1', amount: 18000000, type: 'INCOME', date: '2026-10-25', note: 'Lương tháng 10', categoryId: 'cat6', sourceAccountId: 'acc2', destAccountId: null, eventId: '', withPerson: 'Công ty', location: '' },
+        { id: 'tx2', amount: 1650000, type: 'EXPENSE', date: '2026-10-25', note: 'Vé máy bay khứ hồi', categoryId: 'cat5', sourceAccountId: 'acc2', destAccountId: null, eventId: 'ev1', withPerson: 'Gia đình', location: 'Vietnam Airlines' },
+        { id: 'tx3', amount: 450000, type: 'EXPENSE', date: '2026-10-25', note: 'Lẩu nướng cuối tuần', categoryId: 'cat1', sourceAccountId: 'acc1', destAccountId: null, eventId: '', withPerson: 'Hội bạn', location: 'Gogi House' },
+        { id: 'tx4', amount: 1200000, type: 'EXPENSE', date: '2026-10-24', note: 'Đặt phòng khách sạn biển', categoryId: 'cat5', sourceAccountId: 'acc2', destAccountId: null, eventId: 'ev1', withPerson: '', location: 'Booking.com' }
+      ],
+      budgets: [
+        { id: 'b1', categoryId: 'cat1', limit: 4000000 },
+        { id: 'b2', categoryId: 'cat4', limit: 3000000 }
+      ],
+      debts: [
+        { id: 'd1', person: 'Nguyễn Văn A', type: 'LENT', total: 5000000, paid: 2000000, due: '2026-11-20', note: 'Cho mượn xoay sở công việc', settled: false },
+        { id: 'd2', person: 'Trả góp Thẻ tín dụng', type: 'BORROWED', total: 12000000, paid: 4000000, due: '2026-11-25', note: 'Mua Macbook trả góp', settled: false }
+      ]
+    };
+
+    function loadSaved() {
+      try {
+        const s = localStorage.getItem(STORAGE_KEY);
+        return s ? JSON.parse(s) : JSON.parse(JSON.stringify(initialSeed));
+      } catch {
+        return JSON.parse(JSON.stringify(initialSeed));
+      }
+    }
+    function persist() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    }
+
+    let state = loadSaved();
+    let activeTab = 'dashboard';
+    let selectedWalletId = 'ALL';
+    let txFilter = 'ALL';
+
+    function vnd(n) {
+      return new Intl.NumberFormat('vi-VN').format(Math.round(n || 0)) + ' ₫';
+    }
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      document.getElementById('toastText').textContent = msg;
+      box.classList.remove('hidden');
+      setTimeout(() => box.classList.add('hidden'), 3500);
+    }
+    function hideToast() { document.getElementById('toastBox').classList.add('hidden'); }
+
+    function renderWalletPicker() {
+      const sel = document.getElementById('globalWalletSelect');
+      const spendableTotal = state.accounts.filter(a => !a.excludeFromTotal).reduce((s, a) => s + Number(a.balance), 0);
+      sel.innerHTML = `
+        <option value="ALL" ${selectedWalletId==='ALL'?'selected':''}>Tất cả ví khả dụng (${vnd(spendableTotal)})</option>
+        ${state.accounts.map(a => `
+          <option value="${a.id}" ${selectedWalletId===a.id?'selected':''}>
+            ${a.icon} ${a.name} (${vnd(a.balance)})${a.excludeFromTotal ? ' [Ẩn khỏi tổng]' : ''}
+          </option>
+        `).join('')}
+      `;
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      closeModal();
+      ['dashboard', 'budget', 'debt', 'events', 'analytics'].forEach(t => {
+        const el = document.getElementById('tab_' + t);
+        el.className = t === tab
+          ? 'flex flex-col items-center py-1 rounded-xl text-emerald-500 font-semibold'
+          : 'flex flex-col items-center py-1 rounded-xl text-[var(--muted-foreground)] font-medium';
+      });
+      render();
+    }
+
+    function closeModal() {
+      const m = document.getElementById('modalContainer');
+      m.classList.add('hidden');
+      m.innerHTML = '';
+    }
+
+    function render() {
+      persist();
+      renderWalletPicker();
+      const c = document.getElementById('viewContainer');
+      if (activeTab === 'dashboard') c.innerHTML = viewDashboard();
+      else if (activeTab === 'budget') c.innerHTML = viewBudget();
+      else if (activeTab === 'debt') c.innerHTML = viewDebt();
+      else if (activeTab === 'events') c.innerHTML = viewEventsAndBills();
+      else if (activeTab === 'analytics') c.innerHTML = viewAnalyticsAndWallets();
+    }
+
+    function viewDashboard() {
+      const walletFilteredTx = state.transactions.filter(t => selectedWalletId === 'ALL' || t.sourceAccountId === selectedWalletId || t.destAccountId === selectedWalletId);
+      const inc = walletFilteredTx.filter(t => t.type === 'INCOME').reduce((s, t) => s + Number(t.amount), 0);
+      const exp = walletFilteredTx.filter(t => t.type === 'EXPENSE').reduce((s, t) => s + Number(t.amount), 0);
+      const net = inc - exp;
+      const filtered = walletFilteredTx.filter(t => txFilter === 'ALL' || t.type === txFilter);
+
+      const byDate = {};
+      filtered.forEach(tx => {
+        if (!byDate[tx.date]) byDate[tx.date] = [];
+        byDate[tx.date].push(tx);
+      });
+      const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+
+      return `
+        <div class="grid grid-cols-3 text-center text-xs font-semibold border-b border-[var(--border)] pb-2">
+          <span class="text-[var(--muted-foreground)]">Tháng 09/2026</span>
+          <span class="text-emerald-500 border-b-2 border-emerald-500 pb-1 font-bold">Tháng này (10/2026)</span>
+          <span class="text-[var(--muted-foreground)]">Tương lai</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-1.5">
+          <div class="flex justify-between text-xs"><span class="text-[var(--muted-foreground)]">Tiền vào (Thu nhập)</span><span class="font-bold text-emerald-500">+${vnd(inc)}</span></div>
+          <div class="flex justify-between text-xs"><span class="text-[var(--muted-foreground)]">Tiền ra (Chi tiêu)</span><span class="font-bold text-rose-500">-${vnd(exp)}</span></div>
+          <div class="border-t border-[var(--border)] pt-1.5 flex justify-between text-xs"><span class="font-semibold">Dòng tiền ròng tháng</span><span class="font-extrabold ${net>=0 ? 'text-emerald-500' : 'text-rose-500'}">${net>=0?'+':''}${vnd(net)}</span></div>
+        </div>
+        <div class="flex gap-1.5 overflow-x-auto pb-1">
+          ${[['ALL', 'Tất cả'], ['EXPENSE', 'Khoản chi'], ['INCOME', 'Khoản thu'], ['TRANSFER', 'Chuyển khoản']].map(([code, label]) => `
+            <button onclick="txFilter='${code}';render()" class="px-3 py-1 rounded-full text-xs font-semibold border ${txFilter===code ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-[var(--secondary)] text-[var(--foreground)] border-[var(--border)]'}">${label}</button>
+          `).join('')}
+        </div>
+        <div class="space-y-3">
+          ${sortedDates.map(dateStr => {
+            const dayList = byDate[dateStr];
+            const dayNet = dayList.reduce((s, t) => t.type === 'INCOME' ? s + Number(t.amount) : (t.type === 'EXPENSE' ? s - Number(t.amount) : s), 0);
+            return `
+              <div class="rounded-2xl bg-[var(--background)] border border-[var(--border)] overflow-hidden">
+                <div class="px-3.5 py-2 bg-[var(--secondary)] flex items-center justify-between border-b border-[var(--border)]">
+                  <span class="text-sm font-extrabold">${dateStr.slice(8,10)}/${dateStr.slice(5,7)}</span>
+                  <span class="text-xs font-bold ${dayNet>=0 ? 'text-emerald-500' : 'text-[var(--foreground)]'}">${dayNet>=0 ? '+' : ''}${vnd(dayNet)}</span>
+                </div>
+                <div class="divide-y divide-[var(--border)]">
+                  ${dayList.map(tx => {
+                    const cat = state.categories.find(c => c.id === tx.categoryId);
+                    const src = state.accounts.find(a => a.id === tx.sourceAccountId);
+                    const ev = state.events.find(e => e.id === tx.eventId);
+                    const isTr = tx.type === 'TRANSFER';
+                    const title = isTr ? 'Chuyển khoản nội bộ' : (cat?.name || 'Giao dịch');
+                    const amtColor = tx.type === 'INCOME' ? 'text-emerald-500' : (tx.type === 'EXPENSE' ? 'text-rose-500' : 'text-blue-500');
+                    const sign = tx.type === 'INCOME' ? '+' : (tx.type === 'EXPENSE' ? '-' : '');
+                    return `
+                      <div class="p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-9 h-9 rounded-full bg-[var(--secondary)] flex items-center justify-center text-base">${isTr ? '🔄' : (cat?.icon || '💸')}</div>
+                          <div>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                              <span class="text-sm font-semibold">${title}</span>
+                              ${ev ? `<span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-500 text-xs font-medium">${ev.icon} ${ev.name}</span>` : ''}
+                              ${tx.location ? `<span class="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-500 text-xs font-medium">📍 ${tx.location}</span>` : ''}
+                            </div>
+                            <div class="text-xs text-[var(--muted-foreground)]">${src?.name || ''} ${tx.note ? '• ' + tx.note : ''} ${tx.withPerson ? '• 👥 ' + tx.withPerson : ''}</div>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-bold ${amtColor}">${sign}${vnd(tx.amount)}</span>
+                          <button onclick="deleteTx('${tx.id}')" class="text-xs text-[var(--muted-foreground)]">✕</button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function viewBudget() {
+      return `
+        <div class="space-y-3">
+          ${state.budgets.map(b => {
+            const cat = state.categories.find(c => c.id === b.categoryId);
+            const spent = state.transactions.filter(t => t.type === 'EXPENSE' && t.categoryId === b.categoryId).reduce((s, t) => s + Number(t.amount), 0);
+            const ratio = b.limit > 0 ? (spent / b.limit) : 0;
+            const pct = Math.round(ratio * 100);
+            const barClass = ratio >= 1 ? 'bg-rose-500' : (ratio >= 0.8 ? 'bg-amber-500' : 'bg-emerald-500');
+            return `
+              <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+                <div class="flex items-center justify-between"><span class="text-sm font-bold">${cat ? cat.icon + ' ' + cat.name : 'Ngân sách'}</span><span class="text-xs font-bold">${pct}%</span></div>
+                <div class="w-full h-2.5 bg-[var(--secondary)] rounded-full overflow-hidden"><div class="h-full ${barClass}" style="width:${Math.min(pct, 100)}%"></div></div>
+                <div class="flex justify-between text-xs text-[var(--muted-foreground)]"><span>Đã chi: ${vnd(spent)}</span><span>Hạn mức: <strong class="text-[var(--foreground)]">${vnd(b.limit)}</strong></span></div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function viewDebt() {
+      const receivable = state.debts.filter(d => d.type === 'LENT' && !d.settled).reduce((s, d) => s + Math.max(0, d.total - d.paid), 0);
+      const payable = state.debts.filter(d => d.type === 'BORROWED' && !d.settled).reduce((s, d) => s + Math.max(0, d.total - d.paid), 0);
+      return `
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]"><div class="text-xs font-semibold text-teal-500">↗ Cần thu (Cho vay)</div><div class="text-base font-extrabold mt-1">${vnd(receivable)}</div></div>
+          <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)]"><div class="text-xs font-semibold text-amber-500">↙ Phải trả (Đi vay)</div><div class="text-base font-extrabold mt-1">${vnd(payable)}</div></div>
+        </div>
+        <div class="space-y-2.5">
+          ${state.debts.map(d => {
+            const remain = Math.max(0, d.total - d.paid);
+            const pct = d.total > 0 ? Math.min(100, Math.round((d.paid / d.total) * 100)) : 100;
+            const isLent = d.type === 'LENT';
+            return `
+              <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <span class="text-sm font-bold">${d.person}</span>
+                    <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${isLent ? 'bg-teal-500/15 text-teal-500' : 'bg-amber-500/15 text-amber-500'}">${isLent ? 'Cho vay' : 'Đi vay'}</span>
+                    <div class="text-xs text-[var(--muted-foreground)] mt-0.5">${d.note || ''}</div>
+                  </div>
+                  <div class="text-right"><div class="text-sm font-extrabold">${vnd(remain)}</div><div class="text-xs text-[var(--muted-foreground)]">Gốc: ${vnd(d.total)}</div></div>
+                </div>
+                <div class="w-full h-2 bg-[var(--secondary)] rounded-full overflow-hidden"><div class="h-full ${d.settled ? 'bg-emerald-500' : (isLent ? 'bg-teal-500' : 'bg-amber-500')}" style="width:${pct}%"></div></div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-[var(--muted-foreground)]">📅 Hạn: ${d.due}</span>
+                  ${d.settled ? `<span class="text-emerald-500 font-bold">✓ Đã tất toán</span>` : `<button onclick="quickSettleDebt('${d.id}')" class="px-3 py-1 rounded-full text-xs font-semibold text-white ${isLent ? 'bg-teal-600' : 'bg-amber-600'}">${isLent ? 'Thu hết nợ' : 'Trả hết nợ'}</button>`}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function viewEventsAndBills() {
+      return `
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">✈️ Sự kiện & Chuyến đi (Travel Mode)</div>
+          ${state.events.map(ev => {
+            const spent = state.transactions.filter(t => t.type === 'EXPENSE' && t.eventId === ev.id).reduce((s, t) => s + Number(t.amount), 0);
+            const txCount = state.transactions.filter(t => t.eventId === ev.id).length;
+            const pct = ev.budget > 0 ? Math.min(100, Math.round((spent / ev.budget) * 100)) : 0;
+            return `
+              <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+                <div class="flex justify-between items-center">
+                  <div><span class="text-sm font-bold">${ev.icon} ${ev.name}</span><div class="text-xs text-[var(--muted-foreground)]">${txCount} giao dịch</div></div>
+                  <div class="text-right"><div class="text-sm font-extrabold text-rose-500">${vnd(spent)}</div><div class="text-xs text-[var(--muted-foreground)]">Dự kiến: ${vnd(ev.budget)}</div></div>
+                </div>
+                <div class="w-full h-2 bg-[var(--secondary)] rounded-full overflow-hidden"><div class="h-full bg-blue-500" style="width:${pct}%"></div></div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div class="space-y-2 pt-2">
+          <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">🧾 Hóa đơn định kỳ hàng tháng (1-Chạm)</div>
+          ${state.bills.map(bill => `
+            <div class="p-3.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-between">
+              <div><div class="text-sm font-bold">${bill.title}</div><div class="text-sm font-extrabold text-rose-500 mt-1">${vnd(bill.amount)}</div></div>
+              ${bill.paidThisMonth ? `<span class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-500 text-xs font-bold">✓ Đã trả</span>` : `<button onclick="payBillNow('${bill.id}')" class="px-3 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold">Trả ngay</button>`}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function viewAnalyticsAndWallets() {
+      return `
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">👛 Quản lý Ví (Chế độ Không tính vào tổng)</div>
+          ${state.accounts.map(a => `
+            <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="text-lg">${a.icon}</span>
+                <div>
+                  <div class="text-sm font-bold">${a.name}</div>
+                  <button onclick="toggleExcludeWallet('${a.id}')" class="text-xs underline ${a.excludeFromTotal ? 'text-amber-500' : 'text-[var(--muted-foreground)]'}">
+                    ${a.excludeFromTotal ? '🔒 Đang ẩn khỏi tổng khả dụng' : '✓ Tính vào tổng khả dụng'}
+                  </button>
+                </div>
+              </div>
+              <div class="text-sm font-extrabold">${vnd(a.balance)}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function openOCRModal() {
+      const m = document.getElementById('modalContainer');
+      m.classList.remove('hidden');
+      m.innerHTML = `
+        <div class="space-y-2.5">
+          <div class="flex justify-between items-center"><span class="text-sm font-bold">📸 Quét Hóa Đơn AI (OCR)</span><button onclick="closeModal()" class="text-xs">✕</button></div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button onclick="fillOCR('Highlands Coffee', 145000, 'cat1')" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold">☕ Highlands<br/><span class="text-rose-500">145.000₫</span></button>
+            <button onclick="fillOCR('Siêu thị WinMart', 680000, 'cat1')" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold">🛒 WinMart<br/><span class="text-rose-500">680.000₫</span></button>
+            <button onclick="fillOCR('Trạm xăng Petrolimex', 120000, 'cat2')" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-semibold">⛽ Petrolimex<br/><span class="text-rose-500">120.000₫</span></button>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="ocr_merchant" type="text" value="Highlands Coffee" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-semibold" />
+            <input id="ocr_amt" type="number" value="145000" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold text-rose-500" />
+          </div>
+          <input type="hidden" id="ocr_cat" value="cat1" />
+          <button onclick="saveOCRTx()" class="w-full py-2 rounded-xl bg-blue-600 text-white text-xs font-bold">Lưu Hóa Đơn Vào Sổ</button>
+        </div>
+      `;
+    }
+    function fillOCR(m, a, c) {
+      document.getElementById('ocr_merchant').value = m;
+      document.getElementById('ocr_amt').value = a;
+      document.getElementById('ocr_cat').value = c;
+    }
+    function saveOCRTx() {
+      const merchant = document.getElementById('ocr_merchant').value.trim();
+      const amount = Number(document.getElementById('ocr_amt').value);
+      const catId = document.getElementById('ocr_cat').value;
+      if (!amount || amount <= 0) return;
+      state.accounts[0].balance -= amount;
+      state.transactions.unshift({ id: 'tx_' + Date.now(), amount, type: 'EXPENSE', date: '2026-10-25', note: 'Quét hóa đơn OCR', categoryId: catId, sourceAccountId: state.accounts[0].id, destAccountId: null, eventId: '', withPerson: '', location: merchant });
+      closeModal();
+      switchTab('dashboard');
+      showToast(`📸 Đã lưu hóa đơn "${merchant}"!`);
+    }
+
+    function openSplitBillModal() {
+      const m = document.getElementById('modalContainer');
+      m.classList.remove('hidden');
+      m.innerHTML = `
+        <div class="space-y-2.5">
+          <div class="flex justify-between items-center"><span class="text-sm font-bold">🍕 Chia Tiền Nhóm</span><button onclick="closeModal()" class="text-xs">✕</button></div>
+          <div class="grid grid-cols-2 gap-2">
+            <input id="sp_title" type="text" value="Ăn lẩu cuối tuần" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]" />
+            <input id="sp_total" type="number" value="1200000" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold" />
+          </div>
+          <input id="sp_friends" type="text" value="Minh, Lan" class="w-full p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]" />
+          <button onclick="executeSplitBill()" class="w-full py-2 rounded-xl bg-purple-600 text-white text-xs font-bold">Chia Tiền & Tạo Khoản Phải Thu</button>
+        </div>
+      `;
+    }
+    function executeSplitBill() {
+      const title = document.getElementById('sp_title').value.trim() || 'Chia bill';
+      const total = Number(document.getElementById('sp_total').value);
+      const friends = document.getElementById('sp_friends').value.split(',').map(s => s.trim()).filter(Boolean);
+      if (!total || total <= 0 || !friends.length) return;
+      const headCount = friends.length + 1;
+      const share = Math.round(total / headCount);
+      const acc = state.accounts[1] || state.accounts[0];
+      acc.balance -= total;
+      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: total, type: 'EXPENSE', date: '2026-10-25', note: `${title} (Chia ${headCount} người)`, categoryId: 'cat1', sourceAccountId: acc.id, destAccountId: null, eventId: '', withPerson: friends.join(', '), location: '' });
+      friends.forEach(f => state.debts.unshift({ id: 'd_' + Date.now() + Math.random(), person: f, type: 'LENT', total: share, paid: 0, due: '2026-11-05', note: `Chia tiền: ${title}`, settled: false }));
+      closeModal();
+      switchTab('debt');
+      showToast(`🍕 Đã chia bill & tạo ${friends.length} khoản phải thu trong Sổ Nợ!`);
+    }
+
+    function openAdjustBalanceModal() {
+      const targetAcc = state.accounts.find(a => a.id === selectedWalletId) || state.accounts[0];
+      const m = document.getElementById('modalContainer');
+      m.classList.remove('hidden');
+      m.innerHTML = `
+        <div class="space-y-2.5">
+          <div class="flex justify-between items-center"><span class="text-sm font-bold">⚖️ Chỉnh số dư (${targetAcc.name})</span><button onclick="closeModal()" class="text-xs">✕</button></div>
+          <input id="adj_actual" type="number" value="${targetAcc.balance}" class="w-full p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold" />
+          <button onclick="confirmAdjustBalance('${targetAcc.id}')" class="w-full py-2 rounded-xl bg-amber-600 text-white text-xs font-bold">Cân Bằng Số Dư Ngay</button>
+        </div>
+      `;
+    }
+    function confirmAdjustBalance(accId) {
+      const acc = state.accounts.find(a => a.id === accId);
+      const actual = Number(document.getElementById('adj_actual').value);
+      const diff = actual - acc.balance;
+      if (diff === 0) { closeModal(); return; }
+      acc.balance = actual;
+      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: Math.abs(diff), type: diff > 0 ? 'INCOME' : 'EXPENSE', date: '2026-10-25', note: 'Điều chỉnh cân bằng số dư thực tế', categoryId: diff > 0 ? 'cat7' : 'cat1', sourceAccountId: acc.id, destAccountId: null, eventId: '', withPerson: '', location: '' });
+      closeModal();
+      render();
+      showToast(`⚖️ Đã cân bằng số dư "${acc.name}"!`);
+    }
+
+    function openTxModal() {
+      const m = document.getElementById('modalContainer');
+      m.classList.remove('hidden');
+      m.innerHTML = `
+        <div class="space-y-2.5">
+          <div class="flex justify-between items-center"><span class="text-sm font-bold">Thêm Giao dịch</span><button onclick="closeModal()" class="text-xs">✕</button></div>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="m_tx_type" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]"><option value="EXPENSE">Khoản chi (-)</option><option value="INCOME">Khoản thu (+)</option></select>
+            <input id="m_tx_amount" type="number" placeholder="Số tiền (VND)" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)] font-bold" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="m_tx_src" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]">${state.accounts.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}</select>
+            <select id="m_tx_cat" class="p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]">${state.categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}</select>
+          </div>
+          <input id="m_tx_note" type="text" placeholder="Ghi chú..." class="w-full p-2 rounded-lg text-xs bg-[var(--card)] border border-[var(--border)]" />
+          <button onclick="saveNewTx()" class="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">Lưu Giao Dịch</button>
+        </div>
+      `;
+    }
+    function saveNewTx() {
+      const type = document.getElementById('m_tx_type').value;
+      const amount = Number(document.getElementById('m_tx_amount').value);
+      const srcId = document.getElementById('m_tx_src').value;
+      const catId = document.getElementById('m_tx_cat').value;
+      const note = document.getElementById('m_tx_note').value.trim();
+      if (!amount || amount <= 0) return;
+      const acc = state.accounts.find(a => a.id === srcId);
+      if (type === 'INCOME' && acc) acc.balance += amount;
+      if (type === 'EXPENSE' && acc) acc.balance -= amount;
+      state.transactions.unshift({ id: 'tx_' + Date.now(), amount, type, date: '2026-10-25', note, categoryId: catId, sourceAccountId: srcId, destAccountId: null, eventId: '', withPerson: '', location: '' });
+      closeModal();
+      render();
+    }
+    function deleteTx(id) {
+      const idx = state.transactions.findIndex(t => t.id === id);
+      if (idx > -1) { state.transactions.splice(idx, 1); render(); }
+    }
+    function payBillNow(billId) {
+      const b = state.bills.find(x => x.id === billId);
+      if (!b || b.paidThisMonth) return;
+      b.paidThisMonth = true;
+      const acc = state.accounts.find(a => a.id === b.accountId);
+      if (acc) acc.balance -= b.amount;
+      state.transactions.unshift({ id: 'tx_' + Date.now(), amount: b.amount, type: 'EXPENSE', date: '2026-10-25', note: 'Thanh toán hóa đơn: ' + b.title, categoryId: b.categoryId, sourceAccountId: b.accountId, destAccountId: null, eventId: '', withPerson: '', location: '' });
+      render();
+    }
+    function toggleExcludeWallet(accId) {
+      const a = state.accounts.find(x => x.id === accId);
+      if (a) { a.excludeFromTotal = !a.excludeFromTotal; render(); }
+    }
+    function quickSettleDebt(debtId) {
+      const d = state.debts.find(x => x.id === debtId);
+      if (d && !d.settled) { d.paid = d.total; d.settled = true; render(); }
+    }
+
+    render();
+  </script>
+</body>
+</html>
