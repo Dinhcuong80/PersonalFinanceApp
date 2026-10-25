@@ -1,0 +1,86 @@
+workflows:
+  # 1. Luồng kiểm tra biên dịch miễn phí trên Máy Mac Đám Mây
+  ios-simulator-verify:
+    name: Verify Swift Build (Simulator)
+    max_build_duration: 45
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+      vars:
+        XCODE_SCHEME: "PersonalFinanceApp"
+    scripts:
+      - name: Chuẩn bị Assets.xcassets & Tạo Xcode Project (.xcodeproj)
+        script: |
+          mkdir -p Assets.xcassets/AppIcon.appiconset
+          cat << 'EOF' > Assets.xcassets/Contents.json
+          {"info":{"author":"xcode","version":1}}
+          EOF
+          cat << 'EOF' > Assets.xcassets/AppIcon.appiconset/Contents.json
+          {"images":[{"idiom":"universal","platform":"ios","size":"1024x1024"}],"info":{"author":"xcode","version":1}}
+          EOF
+          brew install xcodegen
+          xcodegen generate
+      - name: Biên dịch kiểm tra lỗi trên iOS Simulator
+        script: |
+          xcodebuild build \
+            -project "PersonalFinanceApp.xcodeproj" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO
+
+  # 2. Luồng Đóng gói .ipa & Đẩy thẳng lên App Store Connect / TestFlight
+  ios-appstore-release:
+    name: Release to App Store Connect & TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Codemagic_AppStore_Key
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: vn.finsmart.personalfinance
+      xcode: latest
+      vars:
+        XCODE_PROJECT: "PersonalFinanceApp.xcodeproj"
+        XCODE_SCHEME: "PersonalFinanceApp"
+    scripts:
+      - name: Tạo AppIcon 1024x1024 & Xcode Project (.xcodeproj)
+        script: |
+          mkdir -p Assets.xcassets/AppIcon.appiconset
+          cat << 'EOF' > Assets.xcassets/Contents.json
+          {"info":{"author":"xcode","version":1}}
+          EOF
+          python3 -c '
+          import zlib, struct
+          def make_png(w, h, r, g, b):
+              raw = b"".join(b"\x00" + bytes([r, g, b]) * w for _ in range(h))
+              def chunk(tag, data):
+                  return struct.pack("!I", len(data)) + tag + data + struct.pack("!I", zlib.crc32(tag + data) & 0xffffffff)
+              return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack("!IIBBBBB", w, h, 8, 2, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b"")
+          open("Assets.xcassets/AppIcon.appiconset/AppIcon.png", "wb").write(make_png(1024, 1024, 30, 60, 114))
+          '
+          cat << 'EOF' > Assets.xcassets/AppIcon.appiconset/Contents.json
+          {"images":[{"filename":"AppIcon.png","idiom":"universal","platform":"ios","size":"1024x1024"}],"info":{"author":"xcode","version":1}}
+          EOF
+          brew install xcodegen
+          xcodegen generate
+      - name: Gắn chứng chỉ Code Signing tự động
+        script: |
+          xcode-project use-profiles
+      - name: Tăng số Build Number tự động
+        script: |
+          agvtool new-version -all $(($BUILD_NUMBER + 1))
+      - name: Build file .ipa chuẩn App Store
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
